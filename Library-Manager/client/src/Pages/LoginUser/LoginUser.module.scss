@@ -1,0 +1,48 @@
+.wrapper {
+    width: 100vw;
+    height: 100vh;
+    background: rgba(83, 225, 60, 0.22);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.inner {
+    width: 100%;
+    max-width: 600px;
+    padding: 60px;
+}
+
+.column-right {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+
+    h1 {
+        font-size: 30px;
+        font-weight: 600;
+        font-style: normal;
+    }
+
+    span {
+        color: #a3aed0;
+    }
+}
+
+#forgot-password {
+    color: #00ace8;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: end;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
