@@ -39,7 +39,7 @@ function RegisterUser() {
                     <div>
                         <TextField
                             id="outlined-basic"
-                            label="Tên Tài Khoản"
+                            label="Họ và tên"
                             variant="outlined"
                             size="medium"
                             fullWidth
