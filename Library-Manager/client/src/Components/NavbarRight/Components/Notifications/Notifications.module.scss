@@ -3,36 +3,33 @@
 }
 
 .title {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 24px;
+  margin-bottom: 20px;
 }
 
-.notification-list {
-  list-style-type: none;
-  padding: 0;
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-.notification-item {
-  margin-bottom: 10px;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 5px;
-  border: 1px solid #ddd;
+.notification-toggle {
+  padding: 8px 16px;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &.active {
+    background: #1976d2;
+    color: white;
+  }
 }
 
+.loading,
+.error,
 .no-notification {
-  margin-top: 10px;
-  color: gray;
-}
-
-.active {
-  background-color: #e0e0e0;
-}
-
-.loading {
-  color: #888;
-}
-
-.error {
-  color: red;
+  padding: 20px;
+  text-align: center;
+  font-size: 16px;
 }

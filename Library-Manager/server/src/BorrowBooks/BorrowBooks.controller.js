@@ -45,19 +45,45 @@ class BorrowBooks {
 
     // Method to get all borrowed books
     async getAllBorrowBooks(req, res) {
-        const token = req.headers.cookie.split('=')[1];
-        if (!token) return;
-        const dataUser = jwtDecode(token);
+    const cookie = req.headers.cookie;
+    if (!cookie) return res.status(401).json({ message: 'Chưa đăng nhập' });
 
-        if (dataUser) {
-            const data = await modelBorrowBooks.findAll({
-                where: { email: dataUser.email },
-            });
-            return res.status(200).json(data);
-        } else {
-            return res.status(500).json({ message: 'Có lỗi xảy ra' });
-        }
+    const token = cookie.split('=')[1];
+    const dataUser = jwtDecode(token);
+
+    if (!dataUser) {
+        return res.status(500).json({ message: 'Có lỗi xảy ra' });
     }
+
+    try {
+        let whereClause = {};
+        if (!dataUser.isAdmin) {
+            whereClause.email = dataUser.email;
+        }
+
+        const data = await modelBorrowBooks.findAll({ where: whereClause });
+
+        const today = new Date();
+
+        // Cập nhật trạng thái nếu quá hạn
+        for (const item of data) {
+            const expirationDate = new Date(item.date2);
+            if (item.status === '1' && expirationDate < today) {
+                await modelBorrowBooks.update(
+                    { status: '2' },
+                    { where: { id: item.id } }
+                );
+                item.status = '2'; // cập nhật local response luôn
+            }
+        }
+
+        return res.status(200).json(data);
+
+    } catch (error) {
+        console.error('Lỗi getAllBorrowBooks:', error);
+        return res.status(500).json({ message: 'Có lỗi server', error: error.message });
+    }
+}
 
     // Method to return a borrowed book
     async returnBook(req, res) {

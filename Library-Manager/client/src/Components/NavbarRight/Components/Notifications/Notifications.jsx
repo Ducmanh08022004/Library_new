@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import classNames from 'classnames/bind';
 import styles from './Notifications.module.scss';
@@ -12,26 +12,37 @@ function Notifications({ masv }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [checkType, setCheckType] = useState(1);
+  const [showOverdue, setShowOverdue] = useState(false);
+  const [showDueSoon, setShowDueSoon] = useState(false);
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/api/notifications/${masv}`);
-        setNotifications(response.data.notifications);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
+  const apiBaseUrl = 'http://localhost:5000/api';
 
-    fetchNotifications();
+  const fetchNotifications = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${apiBaseUrl}/notifications/${masv}`);
+      setNotifications(response.data.notifications);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [masv]);
 
-  const handleNotificationClick = () => {
-    setCheckType(checkType === 1 ? 2 : 1);
-  };
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const today = new Date();
+
+  const overdueNotifications = notifications.filter((item) => new Date(item.date2) < today);
+
+  const dueSoonNotifications = notifications.filter((item) => {
+    const dueDate = new Date(item.date2);
+    const diffTime = dueDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 && diffDays <= 2;
+  });
 
   const columns = [
     { field: 'bookId', headerName: 'ID', width: 70 },
@@ -40,43 +51,75 @@ function Notifications({ masv }) {
     { field: 'message', headerName: 'Thông Báo', width: 400 },
   ];
 
-  const rows = notifications.map((item) => ({
-    id: item.bookId,        // DataGrid cần trường 'id'
-    bookId: item.bookId,
-    nameBook: item.nameBook,
-    date2: item.date2,
-    message: item.message,
-  }));
+  const formatRows = (list) =>
+    list.map((item) => ({
+      id: item.bookId,
+      bookId: item.bookId,
+      nameBook: item.nameBook,
+      date2: item.date2,
+      message: item.message,
+    }));
 
-  const paginationModel = { page: 0, pageSize: 5 };
+  if (loading) {
+    return <div className={cx('loading')}>Đang tải thông báo...</div>;
+  }
 
-  if (loading) return <div className={cx('loading')}>Đang tải thông báo...</div>;
-  if (error) return <div className={cx('error')}>Lỗi: {error}</div>;
+  if (error) {
+    return <div className={cx('error')}>Lỗi: {error}</div>;
+  }
 
   return (
     <div className={cx('wrapper')}>
       <h2 className={cx('title')}>Thông báo</h2>
-      <div
-        onClick={handleNotificationClick}
-        className={cx('notification-toggle', checkType === 2 ? 'active' : '')}
-      >
-        <strong>Thông báo sách quá hạn</strong>
+
+      <div className={cx('buttons')}>
+        <button
+          onClick={() => setShowOverdue((prev) => !prev)}
+          className={cx('notification-toggle', { active: showOverdue })}
+        >
+          📕 Thông báo sách quá hạn ({overdueNotifications.length})
+        </button>
+
+        <button
+          onClick={() => setShowDueSoon((prev) => !prev)}
+          className={cx('notification-toggle', { active: showDueSoon })}
+        >
+          📙 Sách sắp đến hạn trả ({dueSoonNotifications.length})
+        </button>
       </div>
 
-      {checkType === 2 && (
+      {/* Quá hạn */}
+      {showOverdue && (
         <>
-          {notifications.length > 0 ? (
+          {overdueNotifications.length > 0 ? (
             <Paper style={{ marginTop: '20px' }} sx={{ height: '95%', width: '100%' }}>
               <DataGrid
-                rows={rows}
+                rows={formatRows(overdueNotifications)}
                 columns={columns}
-                initialState={{ pagination: { paginationModel } }}
                 pageSizeOptions={[5, 10]}
                 sx={{ border: 0 }}
               />
             </Paper>
           ) : (
             <div className={cx('no-notification')}>Không có sách quá hạn.</div>
+          )}
+        </>
+      )}
+
+      {/* Sắp đến hạn */}
+      {showDueSoon && (
+        <>
+          {dueSoonNotifications.length > 0 ? (
+            <Paper style={{ marginTop: '20px' }} sx={{ height: '95%', width: '100%' }}>
+              <DataGrid
+                rows={formatRows(dueSoonNotifications)}
+                columns={columns}
+                pageSizeOptions={[5, 10]}
+                sx={{ border: 0 }}
+              />
+            </Paper>
+          ) : (
+            <div className={cx('no-notification')}>Không có sách sắp đến hạn trả.</div>
           )}
         </>
       )}
