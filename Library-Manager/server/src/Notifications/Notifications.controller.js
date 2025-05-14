@@ -1,4 +1,3 @@
-// Notifications.controller.js
 const Notification = require('./Notifications.model');
 const moment = require('moment');
 
@@ -26,8 +25,13 @@ class NotificationsController {
                 return moment(book.date2).isBefore(moment(), 'day');
             });
 
+            // Lọc sách sắp đến hạn trong vòng 1 ngày
+            const dueSoonBooks = borrowedBooks.filter(book => {
+                return moment(book.date2).isBetween(moment(), moment().add(1, 'days'), null, '[]');
+            });
+
             // Tạo mảng thông báo cho sách quá hạn
-            const notifications = overdueBooks.map(book => ({
+            const overdueNotifications = overdueBooks.map(book => ({
                 message: `Sách "${book.nameBook}" đã đến hạn trả từ ngày ${moment(book.date2).format('DD-MM-YYYY')}. Vui lòng trả lại sớm.`,
                 bookId: book.id,
                 nameBook: book.nameBook,
@@ -35,9 +39,18 @@ class NotificationsController {
                 status: 'overdue',
             }));
 
+            // Tạo mảng thông báo cho sách sắp đến hạn
+            const dueSoonNotifications = dueSoonBooks.map(book => ({
+                message: `Sách "${book.nameBook}" sắp đến hạn trả vào ngày ${moment(book.date2).format('DD-MM-YYYY')}. Vui lòng chuẩn bị trả.`,
+                bookId: book.id,
+                nameBook: book.nameBook,
+                date2: moment(book.date2).format('DD-MM-YYYY'),
+                status: 'dueSoon',
+            }));
+
             return res.status(200).json({
-                message: notifications.length > 0 ? 'Danh sách sách quá hạn trả' : 'Không có sách quá hạn.',
-                notifications
+                message: 'Danh sách sách quá hạn và sắp đến hạn trả.',
+                notifications: [...overdueNotifications, ...dueSoonNotifications]
             });
 
         } catch (error) {

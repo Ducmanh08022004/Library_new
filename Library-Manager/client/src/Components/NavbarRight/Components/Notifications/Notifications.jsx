@@ -41,15 +41,17 @@ function Notifications({ username }) {
     return new Date(year, month - 1, day); // Tháng tính từ 0
   };
 
+  // Quá hạn
   const overdueNotifications = notifications.filter(
     (item) => parseDate(item.date2) < today
   );
 
+  // Sắp đến hạn (chỉ lấy sách còn 1 ngày nữa là đến hạn)
   const dueSoonNotifications = notifications.filter((item) => {
     const dueDate = parseDate(item.date2);
     const diffTime = dueDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 && diffDays <= 2;
+    return diffDays === 1; // Chỉ lấy sách còn 1 ngày nữa là đến hạn
   });
 
   const columns = [
