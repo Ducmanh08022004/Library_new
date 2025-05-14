@@ -34,7 +34,7 @@ function App() {
             </div>
 
             <div className={cx('column-right')}>
-                <NavbarRight checkType={checkType} />
+                <NavbarRight checkType={checkType} username={dataUser.username}/>
             </div>
         </div>
     );

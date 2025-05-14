@@ -5,11 +5,12 @@ const moment = require('moment');
 class NotificationsController {
     async getOverdueBooks(req, res) {
         try {
-            const masv = req.params.masv;
+            const username = req.params.username;
+            console.log("Received username:", username);
 
             // Lấy tất cả các sách của sinh viên
             const borrowedBooks = await Notification.findAll({
-                where: { masv: masv },
+                where: { username: username },
                 order: [['date2', 'ASC']],
             });
 

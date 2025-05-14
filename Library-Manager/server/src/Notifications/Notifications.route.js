@@ -3,6 +3,6 @@ const router = express.Router();
 const NotificationsController = require('./Notifications.controller');
 
 // Route GET: Lấy danh sách sách quá hạn theo mã sinh viên
-router.get('/:masv', NotificationsController.getOverdueBooks);
+router.get('/:username', NotificationsController.getOverdueBooks);
 
 module.exports = router;

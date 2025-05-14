@@ -8,7 +8,7 @@ import Paper from '@mui/material/Paper';
 
 const cx = classNames.bind(styles);
 
-function Notifications({ masv }) {
+function Notifications({ username }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,14 +20,15 @@ function Notifications({ masv }) {
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${apiBaseUrl}/notifications/${masv}`);
+      const response = await axios.get(`${apiBaseUrl}/notifications/${username}`);
+      console.log("API Response:", response);
       setNotifications(response.data.notifications);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [masv]);
+  }, [username]);
 
   useEffect(() => {
     fetchNotifications();
@@ -35,10 +36,17 @@ function Notifications({ masv }) {
 
   const today = new Date();
 
-  const overdueNotifications = notifications.filter((item) => new Date(item.date2) < today);
+  const parseDate = (dateString) => {
+    const [day, month, year] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // Tháng tính từ 0
+  };
+
+  const overdueNotifications = notifications.filter(
+    (item) => parseDate(item.date2) < today
+  );
 
   const dueSoonNotifications = notifications.filter((item) => {
-    const dueDate = new Date(item.date2);
+    const dueDate = parseDate(item.date2);
     const diffTime = dueDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 0 && diffDays <= 2;

@@ -9,12 +9,12 @@ import Notifications from './Components/Notifications/Notifications';
 
 const cx = classNames.bind(styles);
 
-function NavbarRight({ checkType }) {
+function NavbarRight({ username, checkType }) {
     return (
         <div className={cx('wrapper')}>
             {checkType === 0 ? <ListBook /> : <></>}
             {checkType === 1 ? <SearchBook /> : <></>}
-            {checkType === 2 ? <Notifications /> : <></>}
+            {checkType === 2 ? <Notifications username={username} /> : <></>}
             {checkType === 3 ? <Admin /> : <></>}
         </div>
     );
